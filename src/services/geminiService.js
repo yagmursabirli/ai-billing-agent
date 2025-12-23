@@ -29,7 +29,10 @@ export const parseUserIntent = async (userInput) => {
     if (lowerInput.includes("detay") || lowerInput.includes("ayrıntı")) {
         return { intent: "QUERY_BILL_DETAILED", parameters: { month: detectedMonth } };
     }
-
+    //unpaid
+    if (lowerInput.includes("borçlarım") || lowerInput.includes("listele") || lowerInput.includes("tüm faturalar")) {
+    return { intent: "BANKING_QUERY", parameters: {} }; // Parametre gerekmiyor, tümünü listeleyecek
+}
     // 2. ÖDEME kontrolü
     if (lowerInput.includes("öde") || lowerInput.includes("pay")) {
     // Mesajın içindeki rakamı bulan basit bir regex
@@ -45,6 +48,8 @@ export const parseUserIntent = async (userInput) => {
     if (lowerInput.includes("fatura") || lowerInput.includes("borç") || lowerInput.includes("sorgula")) {
         return { intent: "QUERY_BILL", parameters: { month: detectedMonth } };
     }
+
+    
 
     return { intent: "GREETING", parameters: {} };
   }

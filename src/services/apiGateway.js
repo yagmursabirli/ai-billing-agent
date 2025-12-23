@@ -64,4 +64,8 @@ else if (intent === "PAY_BILL") {
     };
     return axios.post(`${API_URL}/payment/pay`, paymentData, config);
 }
+else if (intent === "BANKING_QUERY") {
+    // Backend: router.get("/banking/unpaid", authMiddleware, bankingQueryBill);
+    return axios.get(`${API_URL}/bills/banking/unpaid`, config);
+}
 };

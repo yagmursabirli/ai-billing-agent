@@ -82,6 +82,22 @@ else if (aiResponse.intent === "PAY_BILL") {
             apiResultText = "Ödeme işlemi sırasında bir sorun oluştu.";
           }
         }
+        else if (aiResponse.intent === "BANKING_QUERY") {
+    // Backend tam olarak bu anahtarı dönüyor: unpaidBills
+    const unpaidList = data.unpaidBills; 
+    
+    if (Array.isArray(unpaidList) && unpaidList.length > 0) {
+        let listText = "Ödenmemiş faturalarınız listeleniyor:\n";
+        unpaidList.forEach(bill => {
+            // Backend'den gelen alan isimlerine tam uyum
+            listText += `• Tarih: ${bill.month} | Tutar: ${bill.total_amount} TL | Kalan: ${bill.remaining_amount} TL\n`;
+        });
+        apiResultText = listText;
+    } else {
+        apiResultText = "Harika! Ödenmemiş herhangi bir faturanız bulunmuyor.";
+    }
+}
+
         else {
           apiResultText = `İşlem Başarılı! Detaylar: ${JSON.stringify(data)}`;
         }
