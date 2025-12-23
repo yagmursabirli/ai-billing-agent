@@ -18,38 +18,38 @@ export const parseUserIntent = async (userInput) => {
   } catch (error) {
     console.error("Gemini Error:", error);
     
-    // --- MANUEL FALLBACK (Hatanın Çözüldüğü Yer) ---
-    // Ayı en başta bir kez belirliyoruz ki tüm kontroller kullanabilsin
+    // --- MANUEL FALLBACK (GÜÇLENDİRİLMİŞ SIRALAMA) ---
     let detectedMonth = "January"; 
     if (lowerInput.includes("aralık") || lowerInput.includes("december")) detectedMonth = "December";
     if (lowerInput.includes("şubat") || lowerInput.includes("february")) detectedMonth = "February";
     if (lowerInput.includes("mart") || lowerInput.includes("march")) detectedMonth = "March";
 
-    // 1. Önce en özel niyet olan "DETAY" kontrolü
+    // 1. ADIM: ÖNCE ÖDEME KONTROLÜ (En kritik aksiyon)
+    // Eğer cümlede 'öde' veya 'yatır' varsa, diğer kelimelere bakmadan PAY_BILL dönmeliyiz.
+    if (lowerInput.includes("öde") || lowerInput.includes("pay") || lowerInput.includes("yatır")) {
+        const amountMatch = lowerInput.match(/\d+/); 
+        const amount = amountMatch ? amountMatch[0] : "100"; 
+        return { 
+            intent: "PAY_BILL", 
+            parameters: { month: detectedMonth, amount: amount } 
+        };
+    }
+
+    // 2. ADIM: DETAY KONTROLÜ
     if (lowerInput.includes("detay") || lowerInput.includes("ayrıntı")) {
         return { intent: "QUERY_BILL_DETAILED", parameters: { month: detectedMonth } };
     }
-    //unpaid
-    if (lowerInput.includes("borçlarım") || lowerInput.includes("listele") || lowerInput.includes("tüm faturalar")) {
-    return { intent: "BANKING_QUERY", parameters: {} }; // Parametre gerekmiyor, tümünü listeleyecek
-}
-    // 2. ÖDEME kontrolü
-    if (lowerInput.includes("öde") || lowerInput.includes("pay")) {
-    // Mesajın içindeki rakamı bulan basit bir regex
-    const amountMatch = lowerInput.match(/\d+/); 
-    const amount = amountMatch ? amountMatch[0] : "100"; // Rakam yoksa varsayılan 100
 
-    return { 
-        intent: "PAY_BILL", 
-        parameters: { month: detectedMonth, amount: amount } 
-    };
-}
-    // 3. GENEL FATURA sorgusu
+    // 3. ADIM: TÜM BORÇLARI LİSTELEME (BANKING)
+    // 'ödenmemiş' kelimesini buraya ekledik.
+    if (lowerInput.includes("listele") || lowerInput.includes("borçlarım") || lowerInput.includes("ödenmemiş") || lowerInput.includes("tüm faturalar")) {
+        return { intent: "BANKING_QUERY", parameters: {} };
+    }
+
+    // 4. ADIM: GENEL FATURA SORGUSU
     if (lowerInput.includes("fatura") || lowerInput.includes("borç") || lowerInput.includes("sorgula")) {
         return { intent: "QUERY_BILL", parameters: { month: detectedMonth } };
     }
-
-    
 
     return { intent: "GREETING", parameters: {} };
   }

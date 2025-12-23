@@ -8,6 +8,7 @@ import { collection, addDoc, query, orderBy, onSnapshot } from 'firebase/firesto
 import { db } from './services/firebase';
 import { parseUserIntent } from './services/geminiService';
 import { loginAndGetToken, callMidtermAPI } from './services/apiGateway';
+import { deleteAllMessages } from './services/firebase';
 
 function App() {
   const [messages, setMessages] = useState([]);
@@ -30,6 +31,31 @@ function App() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+  // App.js içindeki mevcut useEffect'lerin yanına ekle
+useEffect(() => {
+  const startFreshChat = async () => {
+    try {
+      // 1. Önce mevcut Firestore koleksiyonunu temizle (Hocanın istediği taze başlangıç) [cite: 64, 65]
+      await deleteAllMessages(); 
+
+      // 2. Kısa bir bekleme (Firebase senkronizasyonu için)
+      setTimeout(async () => {
+        // 3. İlk selamlama mesajını bot olarak ekle [cite: 9, 10, 75]
+        await addDoc(collection(db, "messages"), {
+          text: "Merhaba! Ben Billing Assistant. Bugün size nasıl yardımcı olabilirim? Faturanızı sorgulayabilir veya ödeme yapabilirsiniz.",
+          sender: 'bot',
+          timestamp: new Date()
+        });
+      }, 500);
+      
+    } catch (error) {
+      console.error("Başlangıç hatası:", error);
+    }
+  };
+
+  startFreshChat();
+  // Boş bağımlılık dizisi [], bunun sadece uygulama ilk açıldığında çalışmasını sağlar
+}, []);
 
   const handleSend = async () => {
     if (!input.trim()) return;

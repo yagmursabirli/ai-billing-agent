@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
+import { getFirestore, collection, getDocs, deleteDoc, doc } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
@@ -12,3 +12,16 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
+
+// Sohbet geçmişini temizlemek için gerekli fonksiyon [cite: 64]
+export const deleteAllMessages = async () => {
+  try {
+    const querySnapshot = await getDocs(collection(db, "messages"));
+    const deletePromises = querySnapshot.docs.map(document => 
+      deleteDoc(doc(db, "messages", document.id))
+    );
+    await Promise.all(deletePromises);
+  } catch (error) {
+    console.error("Firestore temizleme hatası:", error);
+  }
+};
