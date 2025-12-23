@@ -48,5 +48,11 @@ export const callMidtermAPI = async (intent, params) => {
 
     if (intent === "QUERY_BILL") {
         return axios.get(`${API_URL}/bills/query?month=${dbMonth}`, config);
-    }
+    } 
+    //details
+    // apiGateway.js içindeki ilgili satır
+else if (intent === "QUERY_BILL_DETAILED") {
+    // Backend query içinden month, limit ve offset bekliyor
+    return axios.get(`${API_URL}/bills/detailed?month=${dbMonth}&limit=10&offset=0`, config);
+}
 };

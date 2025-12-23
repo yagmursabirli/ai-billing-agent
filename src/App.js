@@ -48,23 +48,37 @@ function App() {
       
       let apiResultText = "";
       if (aiResponse.intent !== "GREETING") {
-        const response = await callMidtermAPI(aiResponse.intent, aiResponse.parameters);
-        const data = response.data;
-        
-        // App.js içindeki ilgili kısım
+        // App.js handleSend içinde
+const response = await callMidtermAPI(aiResponse.intent, aiResponse.parameters);
+const data = response.data;
+
 if (aiResponse.intent === "QUERY_BILL") {
-    const data = response.data;
-    // Hem Swagger hem DB alan adlarını kontrol ediyoruz
-    const amount = data.totalAmount || data.total_amount || "0.00";
-    const status = data.paidStatus || data.paid_status ? 'Ödendi' : 'Ödenmedi';
+    const amount = data.totalAmount || "0.00";
+    apiResultText = `${aiResponse.parameters.month} ayı faturanız: ${amount} TL.`;
+} 
+else if (aiResponse.intent === "QUERY_BILL_DETAILED") {
+    // Backend tam olarak "details" anahtarıyla liste dönüyor
+    const detailsList = data.details; 
     
-    apiResultText = `${aiResponse.parameters.month} ayı faturanız: ${amount} TL. Durum: ${status}`;
-} else {
-            apiResultText = `İşlem Başarılı! Detaylar: ${JSON.stringify(data)}`;
+    if (Array.isArray(detailsList) && detailsList.length > 0) {
+        let detailsText = `${aiResponse.parameters.month} ayı harcama detaylarınız:\n`;
+        detailsList.forEach(item => {
+            // DB kolon isimleri: type ve amount
+            detailsText += `• ${item.type}: ${item.amount} TL\n`;
+        });
+        apiResultText = detailsText;
+    } else {
+        apiResultText = "Bu aya ait harcama detayı bulunamadı.";
+    }
+}
+        else {
+          apiResultText = `İşlem Başarılı! Detaylar: ${JSON.stringify(data)}`;
         }
       } else {
         apiResultText = "Merhaba! Size nasıl yardımcı olabilirim? Faturanızı sorgulayabilir veya ödeme yapabilirsiniz.";
       }
+
+      
 
       await addDoc(collection(db, "messages"), {
         text: apiResultText,

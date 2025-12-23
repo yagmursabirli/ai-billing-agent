@@ -30,16 +30,22 @@ export const parseUserIntent = async (userInput) => {
   } catch (error) {
     console.error("Gemini Error Detail:", error);
     
-    // Fallback: AI hata verse de niyet analizi manuel olarak çalışır
+    // Önce en spesifik olan "DETAY" kontrolünü yapıyoruz
+    if (lowerInput.includes("detay") || lowerInput.includes("ayrıntı")) {
+        let month = "January"; 
+        if (lowerInput.includes("şubat") || lowerInput.includes("february")) month = "February";
+        if (lowerInput.includes("aralık") || lowerInput.includes("december")) month = "December";
+        
+        return { intent: "QUERY_BILL_DETAILED", parameters: { month: month } };
+    }
+    
+    // Eğer detay istenmiyorsa genel sorguya bakıyoruz
     if (lowerInput.includes("fatura") || lowerInput.includes("borç") || lowerInput.includes("sorgula")) {
         let month = "January"; 
-        if (lowerInput.includes("aralık") || lowerInput.includes("december")) month = "December";
         if (lowerInput.includes("şubat") || lowerInput.includes("february")) month = "February";
-        if (lowerInput.includes("mart") || lowerInput.includes("march")) month = "March";
-
-        
+        // ... diğer aylar ...
         return { intent: "QUERY_BILL", parameters: { month: month } };
     }
     throw error;
-  }
+}
 };
