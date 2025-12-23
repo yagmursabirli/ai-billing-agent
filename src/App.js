@@ -71,6 +71,17 @@ else if (aiResponse.intent === "QUERY_BILL_DETAILED") {
         apiResultText = "Bu aya ait harcama detayı bulunamadı.";
     }
 }
+else if (aiResponse.intent === "PAY_BILL") {
+          // Swagger yapısına göre ödeme kontrolü
+          const status = data.paymentStatus; 
+          const remaining = data.remainingAmount;
+          
+          if (status === "Successful") {
+        apiResultText = `${aiResponse.parameters.month} ayı faturanız için ${aiResponse.parameters.amount} TL ödeme yapılmıştır. \nKalan Borç: ${remaining} TL.`;
+    }else {
+            apiResultText = "Ödeme işlemi sırasında bir sorun oluştu.";
+          }
+        }
         else {
           apiResultText = `İşlem Başarılı! Detaylar: ${JSON.stringify(data)}`;
         }

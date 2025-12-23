@@ -55,4 +55,13 @@ else if (intent === "QUERY_BILL_DETAILED") {
     // Backend query içinden month, limit ve offset bekliyor
     return axios.get(`${API_URL}/bills/detailed?month=${dbMonth}&limit=10&offset=0`, config);
 }
+else if (intent === "PAY_BILL") {
+    // Swagger'daki POST yapısına tam uyum
+    const paymentData = {
+        subscriberNo: "998877", //
+        month: dbMonth,         // Dinamik tarih (Örn: 2025-01-01)
+        amount: params.amount || 100           // Örnek tutar (Swagger'daki gibi)
+    };
+    return axios.post(`${API_URL}/payment/pay`, paymentData, config);
+}
 };
