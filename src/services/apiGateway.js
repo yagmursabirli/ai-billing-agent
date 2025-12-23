@@ -60,7 +60,7 @@ else if (intent === "PAY_BILL") {
     const paymentData = {
         subscriberNo: "998877", //
         month: dbMonth,         // Dinamik tarih (Örn: 2025-01-01)
-        amount: params.amount || 100           // Örnek tutar (Swagger'daki gibi)
+        amount: parseFloat(params.amount) || 100          // Örnek tutar (Swagger'daki gibi)
     };
     return axios.post(`${API_URL}/payment/pay`, paymentData, config);
 }

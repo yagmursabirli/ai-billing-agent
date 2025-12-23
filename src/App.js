@@ -99,6 +99,7 @@ else if (aiResponse.intent === "QUERY_BILL_DETAILED") {
 }
 else if (aiResponse.intent === "PAY_BILL") {
           // Swagger yapısına göre ödeme kontrolü
+          console.log("Payment API Response:", data);
           const status = data.paymentStatus; 
           const remaining = data.remainingAmount;
           
