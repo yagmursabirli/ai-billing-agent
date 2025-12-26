@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// 1. Yeni Render URL'in (Azure APIM yerine doğrudan Render Gateway'e gidiyoruz)
-const BASE_URL = "https://bill-api-se4458-midterm.onrender.com";
+
+//const BASE_URL = "https://bill-api-se4458-midterm.onrender.com";
 const API_URL = `${process.env.REACT_APP_BACKEND_URL}/api/v1`;
 const GATEWAY_KEY = process.env.REACT_APP_GATEWAY_KEY; 
 
@@ -15,7 +15,6 @@ export const loginAndGetToken = async () => {
         }, {
             headers: {
                 'Content-Type': 'application/json',
-                // Azure header ismini koruyoruz ki mimari dökümanla uyumlu kalsın
                 'Ocp-Apim-Subscription-Key': GATEWAY_KEY,
                 'subscriberNo': '998877'
             }
@@ -38,7 +37,7 @@ export const callMidtermAPI = async (intent, params) => {
         } 
     };
 
-    // Tarih Mantığı (Neon DB'deki formatla uyumlu: YYYY-MM-DD)
+    
     let dbMonth = "2025-01-01"; 
     const userMonth = params.month ? params.month.toLowerCase() : "";
 
@@ -51,8 +50,25 @@ export const callMidtermAPI = async (intent, params) => {
     } else if (userMonth.includes("mart") || userMonth.includes("march")) {
         dbMonth = "2025-03-01";
     }
+    else if (userMonth.includes("nisan") || userMonth.includes("april")) {
+        dbMonth = "2025-04-01";
+    } else if (userMonth.includes("mayıs") || userMonth.includes("may")) {
+        dbMonth = "2025-05-01";
+    } else if (userMonth.includes("haziran") || userMonth.includes("june")) {
+        dbMonth = "2025-06-01";
+    } else if (userMonth.includes("temmuz") || userMonth.includes("july")) {
+        dbMonth = "2025-07-01";
+    } else if (userMonth.includes("ağustos") || userMonth.includes("august")) {
+        dbMonth = "2025-08-01";
+    } else if (userMonth.includes("eylül") || userMonth.includes("september")) {
+        dbMonth = "2025-09-01";
+    } else if (userMonth.includes("ekim") || userMonth.includes("october")) {
+        dbMonth = "2025-10-01";
+    } else if (userMonth.includes("kasım") || userMonth.includes("november")) {
+        dbMonth = "2025-11-01";
+    }
 
-    // Niyetlere göre API çağrıları
+
     if (intent === "QUERY_BILL") {
         return axios.get(`${API_URL}/bills/query?month=${dbMonth}`, config);
     } 
@@ -68,7 +84,6 @@ export const callMidtermAPI = async (intent, params) => {
         return axios.post(`${API_URL}/payment/pay`, paymentData, config);
     }
     else if (intent === "BANKING_QUERY") {
-        // Backend'deki yeni rota yapınla uyumlu
         return axios.get(`${API_URL}/bills/banking/unpaid`, config);
     }
 };

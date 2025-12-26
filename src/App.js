@@ -16,6 +16,22 @@ function App() {
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef(null);
 
+  // --- AY ÇEVİRİ SÖZLÜĞÜ ---
+  const monthTranslation = {
+    "January": "Ocak",
+    "February": "Şubat",
+    "March": "Mart",
+    "April": "Nisan",
+    "May": "Mayıs",
+    "June": "Haziran",
+    "July": "Temmuz",
+    "August": "Ağustos",
+    "September": "Eylül",
+    "October": "Ekim",
+    "November": "Kasım",
+    "December": "Aralık"
+  };
+
   useEffect(() => {
     loginAndGetToken();
   }, []);
@@ -34,32 +50,26 @@ function App() {
 
   const isInitialMount = useRef(true);
 
-useEffect(() => {
-  const startFreshChat = async () => {
-    // Eğer zaten çalıştıysa bir daha çalıştırma
-    if (!isInitialMount.current) return;
-    isInitialMount.current = false;
+  useEffect(() => {
+    const startFreshChat = async () => {
+      if (!isInitialMount.current) return;
+      isInitialMount.current = false;
 
-    try {
-      // 1. Önce her şeyi sil
-      await deleteAllMessages(); 
-
-      // 2. Mesaj eklemeden önce Firebase'in silme işlemini bitirmesi için bekleyelim
-      setTimeout(async () => {
-        await addDoc(collection(db, "messages"), {
-          text: "Merhaba! Ben Billing Assistant. Bugün size nasıl yardımcı olabilirim?\nFaturanızı sorgulayabilir veya ödeme yapabilirsiniz. 💙",
-          sender: 'bot',
-          timestamp: new Date()
-        });
-      }, 800); // Bekleme süresini biraz artırmak daha güvenli olur
-      
-    } catch (error) {
-      console.error("Başlangıç hatası:", error);
-    }
-  };
-
-  startFreshChat();
-}, []);
+      try {
+        await deleteAllMessages(); 
+        setTimeout(async () => {
+          await addDoc(collection(db, "messages"), {
+            text: "Merhaba! Ben Billing Assistant. Bugün size nasıl yardımcı olabilirim?\nFaturanızı sorgulayabilir veya ödeme yapabilirsiniz. ☺️",
+            sender: 'bot',
+            timestamp: new Date()
+          });
+        }, 800); 
+      } catch (error) {
+        console.error("Başlangıç hatası:", error);
+      }
+    };
+    startFreshChat();
+  }, []);
 
   const handleSend = async () => {
     if (!input.trim()) return;
@@ -77,47 +87,56 @@ useEffect(() => {
       const aiResponse = await parseUserIntent(userMessage);
       let apiResultText = "";
 
+      // Ay ismini Türkçeye çeviriyoruz
+      const displayMonth = monthTranslation[aiResponse.parameters.month] || aiResponse.parameters.month;
+
       if (aiResponse.intent !== "GREETING") {
         const response = await callMidtermAPI(aiResponse.intent, aiResponse.parameters);
         const data = response.data;
 
+        // 1. Tekli Fatura Sorgu
         if (aiResponse.intent === "QUERY_BILL") {
-          const amount = data.totalAmount || "0.00";
-          apiResultText = `${aiResponse.parameters.month} ayı toplam faturanız: ${amount} TL.`;
-        } 
+          if (data && data.totalAmount !== undefined && data.totalAmount !== null) {
+            apiResultText = `${displayMonth} ayı toplam faturanız: ${data.totalAmount} TL.`;
+          } else {
+            apiResultText = `${displayMonth} ayına ait kayıtlı bir fatura bulunamadı. 🔍`;
+          }
+        }
+        // 2. Fatura Detayı
         else if (aiResponse.intent === "QUERY_BILL_DETAILED") {
           const detailsList = data.details; 
           if (Array.isArray(detailsList) && detailsList.length > 0) {
-            let detailsText = `${aiResponse.parameters.month} ayı harcama detaylarınız:\n`;
-            // Her harcama kalemini alt satıra yazdırıyoruz
+            let detailsText = `${displayMonth} ayı harcama detaylarınız:\n`;
             detailsList.forEach(item => {
               detailsText += `• ${item.type}: ${item.amount} TL\n`;
             });
             apiResultText = detailsText;
           } else {
-            apiResultText = "Bu aya ait harcama detayı bulunamadı.";
+            apiResultText = `${displayMonth} ayına ait harcama detayı bulunamadı.`;
           }
         }
+        // 3. Ödeme İşlemi
         else if (aiResponse.intent === "PAY_BILL") {
           const status = data.paymentStatus; 
           const remaining = data.remainingAmount;
           if (status === "Successful") {
-            apiResultText = `İşlem Başarılı! ✅\n${aiResponse.parameters.month} ayı faturanız için ${aiResponse.parameters.amount} TL ödeme yapılmıştır.\nKalan Borç: ${remaining} TL.`;
+            apiResultText = `İşlem Başarılı! ✅\n${displayMonth} ayı faturanız için ${aiResponse.parameters.amount} TL ödeme yapılmıştır.\nKalan Borç: ${remaining} TL.`;
           } else {
             apiResultText = "Ödeme işlemi sırasında bir sorun oluştu. Lütfen tekrar deneyiniz.";
           }
         }
+        // 4. Tüm Borçları Listeleme (Banking)
         else if (aiResponse.intent === "BANKING_QUERY") {
           const unpaidList = data.unpaidBills; 
           if (Array.isArray(unpaidList) && unpaidList.length > 0) {
             let listText = "Ödenmemiş faturalarınız listeleniyor:\n\n";
-            // Her bir faturayı alt alta ve daha okunaklı yazdırıyoruz
             unpaidList.forEach(bill => {
-              listText += `📅 Tarih: ${bill.month}\n💰 Tutar: ${bill.total_amount} TL\n💳 Kalan: ${bill.remaining_amount} TL\n------------------\n`;
+              const billMonthTr = monthTranslation[bill.month] || bill.month;
+              listText += `📅 Tarih: ${billMonthTr}\n💰 Tutar: ${bill.total_amount} TL\n💳 Kalan: ${bill.remaining_amount} TL\n------------------\n`;
             });
             apiResultText = listText;
           } else {
-            apiResultText = "Harika! Ödenmemiş herhangi bir faturanız bulunmuyor. ✨";
+            apiResultText = "Harika! Şu an için ödenmemiş herhangi bir faturanız bulunmuyor. ✨";
           }
         }
         else {
@@ -136,13 +155,17 @@ useEffect(() => {
     } catch (error) {
       console.error("Hata Detayı:", error);
       let errorMsg = "Üzgünüm, işleminizi şu an gerçekleştiremiyorum.";
-      if (error.response && error.response.status === 429) {
-        errorMsg = "Gateway: Günlük istek limitinizi doldurdunuz. Lütfen daha sonra tekrar deneyiniz.";
+
+      if (error.response && error.response.status === 404) {
+          errorMsg = "Aradığınız döneme ait bir fatura kaydı bulunamadı. Lütfen tarihi kontrol ediniz.";
+      } else if (error.response && error.response.status === 429) {
+          errorMsg = "Günlük istek limitinizi doldurdunuz. Lütfen daha sonra tekrar deneyiniz.";
       }
+
       await addDoc(collection(db, "messages"), {
-        text: errorMsg,
-        sender: 'bot',
-        timestamp: new Date()
+          text: errorMsg,
+          sender: 'bot',
+          timestamp: new Date()
       });
     } finally {
       setLoading(false);
@@ -166,7 +189,6 @@ useEffect(() => {
                   color: msg.sender === 'user' ? 'white' : 'black',
                   borderRadius: msg.sender === 'user' ? '20px 20px 0 20px' : '20px 20px 20px 0',
                   maxWidth: '85%',
-                  // KRİTİK: \n karakterlerinin alt satıra geçmesini sağlar
                   whiteSpace: 'pre-wrap', 
                   boxShadow: 1
                 }}>

@@ -13,7 +13,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 
-// Sohbet geçmişini temizlemek için gerekli fonksiyon [cite: 64]
 export const deleteAllMessages = async () => {
   try {
     const querySnapshot = await getDocs(collection(db, "messages"));
