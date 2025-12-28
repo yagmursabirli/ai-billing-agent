@@ -66,6 +66,10 @@ The project strictly follows the **Expected Architecture** defined in the assign
   - **Intent** (e.g., `QUERY_BILL`, `PAY_BILL`)
   - **Parameters** (e.g., `month: March`)
 
+
+### 🔥 Real-Time Data Management
+**Google Firebase (Firestore)** is integrated into the architecture to handle real-time messaging. Every user input and AI response is stored in Firestore to ensure a persistent chat history and real-time UI updates.
+
 ### 🔌 Backend APIs
 - REST APIs hosted on **Render**
 - Handle billing logic and transactions
@@ -126,10 +130,16 @@ The chat application uses constant user credentials for API authentication where
 
 ### 🖥 Backend / Gateway
 - Node.js  
-- Axios  
+- Axios
+
+
+### ☁️ Cloud & Database
+
+Firebase Firestore: Used for real-time data persistence and chat history management.
 
 ### ☁️ Hosting
-- Render  
+- Render: Hosts the Midterm Billing REST APIs.
+- Vercel: Deployment 
 
 ---
 
