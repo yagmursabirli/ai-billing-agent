@@ -1,70 +1,146 @@
-# Getting Started with Create React App
+# 🤖💳 SE 4458 – AI Agent Billing Assistant
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+An **AI-powered chat application** developed as part of the **SE 4458 – Large Scale Systems Design** course.  
+The system allows users to **query, inspect, and pay bills** using **natural language**, powered by an LLM-based AI Agent.
 
-## Available Scripts
+---
 
-In the project directory, you can run:
+## 🚀 Live Links
 
-### `npm start`
+🔗 **Billing AI Agent:**  
+https://ai-billing-agent.vercel.app/
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+🗂 **GitHub Repository:**  
+https://github.com/yagmursabirli/ai-billing-agent
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+🌐 **Backend API:**  
+https://bill-api-se4458-midterm.onrender.com/
 
-### `npm test`
+🎥 **Video Presentation:**  
+*(add video link)*
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
 
-### `npm run build`
+## 📌 Project Overview
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+The **AI Agent Billing Assistant** acts as an intelligent intermediary between users and the **Midterm Billing APIs**.  
+Users can interact with the system via chat instead of calling REST endpoints manually.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+🧠 The AI Agent uses **Google Gemini 2.5 Flash – Lite** to:
+- Understand user intent  
+- Extract parameters (e.g., month, amount)  
+- Trigger the correct backend API calls  
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+---
+## ✨ Core Features
 
-### `npm run eject`
+✅ **Query Bill**  
+Check the total amount due for a specific month.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+✅ **Query Bill (Detailed)**  
+View a detailed breakdown of bill items.
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+✅ **Pay Bill**  
+Complete bill payments directly via chat.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+✅ **Banking Query**  
+List unpaid bills and display overall billing status.
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+---
+## 🏗 System Architecture
 
-## Learn More
+The project strictly follows the **Expected Architecture** defined in the assignment.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+### 🖥 Frontend
+- Built with **React**
+- Real-time chat interface
+- User-friendly messaging experience
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+### 🌐 API Gateway
+- Developed with **Node.js**
+- Acts as a **central hub**
+- Routes all frontend requests to backend services
 
-### Code Splitting
+### 🧠 LLM Integration
+- User messages are sent to **Gemini 2.5 Flash – Lite**
+- Extracts:
+  - **Intent** (e.g., `QUERY_BILL`, `PAY_BILL`)
+  - **Parameters** (e.g., `month: March`)
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
 
-### Analyzing the Bundle Size
+### 🔥 Real-Time Data Management
+**Google Firebase (Firestore)** is integrated into the architecture to handle real-time messaging. Every user input and AI response is stored in Firestore to ensure a persistent chat history and real-time UI updates.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+### 🔌 Backend APIs
+- REST APIs hosted on **Render**
+- Handle billing logic and transactions
 
-### Making a Progressive Web App
+### 🔁 Hybrid Logic
+- **Rule-based fallback system**
+- Ensures continued operation when:
+  - LLM quota is exceeded
+  - AI service is unavailable
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+---
 
-### Advanced Configuration
+## 🛠 Assumptions & Design Choices
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+🔹 **LLM Selection**  
+Google Gemini was chosen for its:
+- High-speed performance  
+- Native structured JSON output  
 
-### Deployment
+🔹 **Intent Mapping**  
+Natural language inputs such as: "mart faturam" are converted into structured API calls like: /api/v1/bills/query?month=2025-03-01
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
 
-### `npm run build` fails to minify
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+
+
+🔹 **Authentication**  
+The chat application uses constant user credentials for API authentication where required.
+
+---
+
+## ⚠️ Issues Encountered & Solutions
+
+🚨 **API Quota Limits (429 Errors)**  
+- Encountered due to Gemini free-tier limitations  
+- ✅ Solved using a **Rule-Based Fallback System**
+
+🌐 **CORS Policy Issues**  
+- Direct browser-to-backend calls were blocked  
+- ✅ Fixed by routing all traffic through the **API Gateway**
+
+🔐 **Security Alert (API Key Exposure)**  
+- An API key was accidentally exposed  
+- ✅ The key was revoked immediately  
+- ✅ A new restricted key was generated via **Google AI Studio**
+
+---
+
+## 🧰 Tech Stack
+
+### 🎨 Frontend
+- React.js  
+- Material UI
+- Vercel (Deployment)
+
+### 🤖 AI
+- Google Gemini 2.5 Flash – Lite  
+
+### 🖥 Backend / Gateway
+- Node.js  
+- Axios
+
+
+### ☁️ Cloud & Database
+
+Firebase Firestore: Used for real-time data persistence and chat history management.
+
+### ☁️ Hosting
+- Render: Hosts the Midterm Billing REST APIs.
+- Vercel: Deployment 
+
+---
+
+✨ This project demonstrates how **LLM-based AI agents** can be integrated with traditional backend systems to deliver a modern, user-friendly billing experience.
